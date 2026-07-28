@@ -1,3 +1,4 @@
+export { clamp } from "./clamp.js";
 import { foo } from "@scratch/shared";
 
 /** Remove duplicates, preserving first-seen order. */
