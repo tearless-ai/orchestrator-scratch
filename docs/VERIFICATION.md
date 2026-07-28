@@ -36,6 +36,7 @@ Faults are set as repository variables, so no commit is involved.
 | `SCRATCH_FAULT_MAIN=fail`, PR | green, the fault is not passed on a non-`main` ref | pass |
 | The same change merged | `main` red after landing | pass, `injected fault: main` |
 | The variable cleared, failed job re-run | `main` green again | pass |
+| A PR merged through the merge queue | `merge_group` run on a `gh-readonly-queue` ref, then squash merged | pass |
 
 The last two rows are the ones worth building the fixture for: a change passed pre-flight, passed CI on the PR, merged, and then broke `main`. That is the only way to exercise the post-merge watch and auto-revert path without waiting for a real bug to do it by accident.
 
