@@ -34,10 +34,12 @@ Faults are set as repository variables, so no commit is involved.
 | `SCRATCH_FAULT_UNIT=flaky`, PR | attempt 1 red | pass |
 | The same run, `gh run rerun --failed` | attempt 2 green | pass, `github.run_attempt` drives it |
 | `SCRATCH_FAULT_MAIN=fail`, PR | green, the fault is not passed on a non-`main` ref | pass |
-| The same change merged | `main` red after landing | see below |
+| The same change merged | `main` red after landing | pass, `injected fault: main` |
+| The variable cleared, failed job re-run | `main` green again | pass |
+
+The last two rows are the ones worth building the fixture for: a change passed pre-flight, passed CI on the PR, merged, and then broke `main`. That is the only way to exercise the post-merge watch and auto-revert path without waiting for a real bug to do it by accident.
 
 ## Still to verify
 
-- `main` going red after a merge with `SCRATCH_FAULT_MAIN=fail`, which is what makes the post-merge watch and auto-revert path testable.
 - Anything involving the merge queue, which is not enabled on this repository yet.
 - Everything in `apps/api` that touches a database, which needs the Neon project.
