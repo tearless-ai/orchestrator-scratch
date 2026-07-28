@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # Faults are set as repository variables, so a scenario is configured in
+      # repo settings rather than in a commit.
+      SCRATCH_FAULT_UNIT: ${{ vars.SCRATCH_FAULT_UNIT }}
+      SCRATCH_FAULT_LINT: ${{ vars.SCRATCH_FAULT_LINT }}
+      SCRATCH_FAULT_SLOW_MS: ${{ vars.SCRATCH_FAULT_SLOW_MS }}
+      SCRATCH_SEED_PAGINATE_BUG: ${{ vars.SCRATCH_SEED_PAGINATE_BUG }}
+      SCRATCH_DB_OPTIONAL: ${{ vars.SCRATCH_DB_OPTIONAL }}
+      # Only on main. This is what lets a change pass every pre-merge gate,
+      # including the merge queue, and then break main.
+      SCRATCH_FAULT_MAIN: ${{ github.ref == 'refs/heads/main' && vars.SCRATCH_FAULT_MAIN || '' }}
+      # Makes "flaky" deterministic: re-running failed jobs increments this.
+      SCRATCH_ATTEMPT: ${{ github.run_attempt }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm ci-checks
