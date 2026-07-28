@@ -54,15 +54,23 @@ The merge queue rule is rejected with `422 Invalid rule 'merge_queue'` on a priv
 That is why this repository is public.
 It holds no secrets: `DATABASE_URL` is an Actions secret, and crewmates push branches to this repository rather than to forks, so secrets still reach CI.
 
+## The database
+
+`apps/api` runs against a real Neon database, Postgres 18.4.
+`apps/api/schema.sql` is applied to it, `DATABASE_URL` is an Actions secret, and `SCRATCH_DB_OPTIONAL` is deliberately not set, so the three Postgres-backed tests actually run.
+
+| Check | Result |
+| --- | --- |
+| `schema.sql` applied, `widgets` seeded with alpha, beta, gamma | pass |
+| `apps/api` tests locally against Neon | pass, 4 of 4 |
+| `apps/api` tests in CI against Neon | pass |
+| The escape hatch removed | `SCRATCH_DB_OPTIONAL` is unset; an absent `DATABASE_URL` now fails the suite |
+
+Secrets do reach CI here even though the repository is public, because crewmates push branches to this repository rather than to forks. A pull request from a fork would not get `DATABASE_URL`, and its `apps/api` tests would fail loudly rather than skip. That is the correct behaviour.
+
+`apps/api/src/db.ts` rewrites `sslmode=require` to `sslmode=verify-full` before connecting. `pg` currently treats the two identically but warns that a future major will weaken `require` to libpq semantics, which do not verify the certificate.
+
 ## Still to verify
 
-- Everything in `apps/api` that touches a database. Deliberately deferred; see below.
-
-## The deferred database
-
-`apps/api` is written and type-checked, but its three Postgres-backed tests do not run yet, because there is no Neon project.
-
-The escape hatch is the repository variable `SCRATCH_DB_OPTIONAL=1`.
-Without it, and without `DATABASE_URL`, the test file throws rather than skipping, because a database test that quietly skips is the exact failure class this fixture exists to catch.
-
-**Deleting that variable is the whole of step 4.** Once a Neon project exists: apply `apps/api/schema.sql` to a template branch, set `DATABASE_URL` as an Actions secret, delete `SCRATCH_DB_OPTIONAL`, and confirm the plan's simultaneous-branch ceiling against five concurrent tasks plus CI.
+- **Branch-per-task.** Architecture §12 wants an ephemeral copy-on-write Neon branch per task, created at spawn and dropped at teardown. That needs a Neon API key, not just a connection string. Today every task would share one database, which is exactly the collision class §12 exists to prevent, so this has to be in place before more than one crewmate runs against `apps/api`.
+- The plan's simultaneous-branch ceiling, once the API key exists. This is open question 1 in `architecture.md` §28.

@@ -12,12 +12,22 @@ export function databaseUrl(): string {
   return url;
 }
 
+/**
+ * `pg` currently treats `sslmode=require` as `verify-full`, and warns that a
+ * future major will weaken it to libpq semantics, which do not verify the
+ * certificate. Say what we mean rather than inherit whichever meaning ships.
+ */
+export function strictSsl(url: string): string {
+  const parsed = new URL(url);
+  if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+    return url;
+  }
+  parsed.searchParams.set("sslmode", "verify-full");
+  return parsed.toString();
+}
+
 export async function withClient<T>(fn: (client: Client) => Promise<T>): Promise<T> {
-  const url = databaseUrl();
-  const client = new Client({
-    connectionString: url,
-    ssl: url.includes("localhost") ? false : true,
-  });
+  const client = new Client({ connectionString: strictSsl(databaseUrl()) });
   await client.connect();
   try {
     return await fn(client);

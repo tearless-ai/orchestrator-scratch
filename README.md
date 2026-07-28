@@ -40,8 +40,8 @@ The harness controls the fault, so a scenario needs no commit and a crewmate can
 In CI these are repository *variables* of the same name, so a scenario is set up in repo settings rather than in a commit.
 `SCRATCH_FAULT_MAIN` is deliberately passed to the job only when the ref is `main`.
 
-`SCRATCH_DB_OPTIONAL=1` is currently set repository-wide because there is no Neon project yet.
-It is the one variable that is not a scenario, and deleting it is the last piece of the fixture.
+`SCRATCH_DB_OPTIONAL` is the one variable that is not a scenario, and it is deliberately **not** set.
+`apps/api` runs against a real Neon database, from the `DATABASE_URL` Actions secret.
 See [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
 ## Commands
