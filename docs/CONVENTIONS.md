@@ -48,6 +48,12 @@ There is no migration runner, on purpose.
 
 A database test that silently skips is the exact failure this fixture exists to catch, so an absent `DATABASE_URL` fails loudly unless `SCRATCH_DB_OPTIONAL=1` is set.
 
+## Pinned toolchain
+
+TypeScript is pinned to `^6.0.3` even though 7.x is the latest release.
+`typescript-eslint` declares a peer range of `>=4.8.4 <6.1.0`, so TypeScript 7 makes `pnpm lint` unusable.
+Bumping TypeScript without checking that peer range will redden the gate for a reason that has nothing to do with the change being made.
+
 ## Markers
 
 `scripts/no-todo-lint.mjs` fails on a bare `TODO` or `FIXME` in tracked source.
