@@ -24,6 +24,15 @@ describe("paginate", () => {
     expect(paginate(items, 1, 0)).toEqual([]);
   });
 
+  it("returns an empty page before the first page", () => {
+    expect(paginate(items, 0, 3)).toEqual([]);
+    expect(paginate(items, -1, 3)).toEqual([]);
+  });
+
+  it("returns nothing when perPage is negative", () => {
+    expect(paginate(items, 1, -3)).toEqual([]);
+  });
+
   it.runIf(seeded)("treats page 1 as the first page", () => {
     expect(paginate(items, 1, 3)).toEqual([1, 2, 3]);
   });
