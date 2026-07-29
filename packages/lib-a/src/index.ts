@@ -1,6 +1,7 @@
 export { clamp } from "./clamp.js";
 export { groupBy } from "./groupBy.js";
 export { isEmpty } from "./isEmpty.js";
+export { sum } from "./sum.js";
 import { foo } from "@scratch/shared";
 
 /** Remove duplicates, preserving first-seen order. */
