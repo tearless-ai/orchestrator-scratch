@@ -1,4 +1,5 @@
 export { clamp } from "./clamp.js";
+export { groupBy } from "./groupBy.js";
 export { isEmpty } from "./isEmpty.js";
 import { foo } from "@scratch/shared";
 
